@@ -91,7 +91,7 @@ const getFormattedWeatherData = async (searchParams) => {
     "weather",
     searchParams
   ).then(formatCurrent);
-  console.log(FormattedCurrentWeather);
+  //console.log(FormattedCurrentWeather);
   const { dt, lat, lon, timezone } = FormattedCurrentWeather;
 
   const formattedForecastWeather = await getWeatherData("forecast", {
