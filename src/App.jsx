@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from 'react'
-import { FaReact } from "react-icons/fa";
+
 import Inputs from './Components/Inputs.jsx';
 import TopButtons from './Components/TopButtons.jsx';
 import TimeAndLocation from './Components/TimeAndLocation.jsx';
@@ -10,7 +10,7 @@ import getWeatherData from './services/WeatherService.js';
 import { ToastContainer, toast } from 'react-toastify';
   import 'react-toastify/dist/ReactToastify.css';
 const App = () => {
-  const [query, setQuery] = useState({ q: 'Delhi' });
+  const [query, setQuery] = useState({ q: 'Bangalore' });
   const [units, setUnits] = useState('metric');
   const [weather, setWeather] = useState(null);
 

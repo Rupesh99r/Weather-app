@@ -1,12 +1,27 @@
 import { DateTime } from "luxon";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const API_KEY = "b26812db62482902eede08da442727df";
 const BASE_URL = "https://api.openweathermap.org/data/2.5/";
 
-const getWeatherData = (infoType, searchParams) => {
+const getWeatherData = async(infoType, searchParams) => {
   const url = new URL(BASE_URL + infoType);
   url.search = new URLSearchParams({ ...searchParams, appid: API_KEY });
-  return fetch(url).then((response) => response.json());
+ try {
+    const response = await fetch(url);
+   if (response.status === 404) {
+     
+      throw new Error(`HTTP error! Status: ${response.status}`);
+      
+    }
+    const data =await response.json();
+    return data;
+  } catch (error) {
+   console.error("Fetch error:", error);
+   
+   toast.error(`City Not Found Error Try Again!!! `);
+  
+  }
 };
 
 const iconUrlFromCode = (icon) =>
@@ -43,48 +58,48 @@ const formatCurrent = (data) => {
     speed,
     details,
     icon: iconUrlFromCode(icon),
-      formattedLocalTime,
-      dt,
-    timezone,lat,lon
+    formattedLocalTime,
+    dt,
+    timezone,
+    lat,
+    lon,
   };
 };
 const formatForecastWeather = (secs, offset, data) => {
-    const hourly = data.filter(f => f.dt > secs).
-        
-        map((f) => (
-            {
-                temp: f.main.temp,
-                title: formatToLocalTime(f.dt, offset, "hh:mm a"),
-                icon: iconUrlFromCode(f.weather[0].icon),
-                date: f.dt_txt,
-            }
-        )).slice(0, 5);
-    const daily = data
-      .filter((f) => f.dt_txt.slice(-8) === "00:00:00")
-      .map((f) => ({
-        temp: f.main.temp,
-        title: formatToLocalTime(f.dt, offset, "ccc"),
-        icon: iconUrlFromCode(f.weather[0].icon),
-        date: f.dt_txt,
-      }));
-    return { hourly,daily };
+  const hourly = data
+    .filter((f) => f.dt > secs)
+    .map((f) => ({
+      temp: f.main.temp,
+      title: formatToLocalTime(f.dt, offset, "hh:mm a"),
+      icon: iconUrlFromCode(f.weather[0].icon),
+      date: f.dt_txt,
+    }))
+    .slice(0, 5);
+  const daily = data
+    .filter((f) => f.dt_txt.slice(-8) === "00:00:00")
+    .map((f) => ({
+      temp: f.main.temp,
+      title: formatToLocalTime(f.dt, offset, "ccc"),
+      icon: iconUrlFromCode(f.weather[0].icon),
+      date: f.dt_txt,
+    }));
+  return { hourly, daily };
 };
 
 const getFormattedWeatherData = async (searchParams) => {
   const FormattedCurrentWeather = await getWeatherData(
     "weather",
     searchParams
-    ).then(formatCurrent);
-    
-    const { dt, lat, lon, timezone } = FormattedCurrentWeather; 
+  ).then(formatCurrent);
+  console.log(FormattedCurrentWeather);
+  const { dt, lat, lon, timezone } = FormattedCurrentWeather;
 
-    const formattedForecastWeather = await getWeatherData("forecast", {
-        lat,
-        lon,
-        units: searchParams.units,
-        
-    }).then((d)=>formatForecastWeather(dt,timezone,d.list));
-  return { ...FormattedCurrentWeather,...formattedForecastWeather };
+  const formattedForecastWeather = await getWeatherData("forecast", {
+    lat,
+    lon,
+    units: searchParams.units,
+  }).then((d) => formatForecastWeather(dt, timezone, d.list));
+  return { ...FormattedCurrentWeather, ...formattedForecastWeather };
 };
 
 export default getFormattedWeatherData;
